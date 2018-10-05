@@ -1,0 +1,3 @@
+why tanh as activation function
+word is represented as a count vector of letter-tri-grams
+equation probability
