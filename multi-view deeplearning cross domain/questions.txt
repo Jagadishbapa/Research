@@ -1,3 +1,8 @@
 why tanh as activation function
 word is represented as a count vector of letter-tri-grams
 equation probability
+mv-dnn training
+what is tf-idf?
+cosine similarity maximize
+relation between cosine and probability
+what are next sections?
