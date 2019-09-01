@@ -1,0 +1,211 @@
+import numpy as np
+from sklearn.naive_bayes import GaussianNB
+from sklearn.linear_model import LogisticRegression
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.neural_network import MLPClassifier
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.metrics import f1_score
+from sklearn.metrics import accuracy_score
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import accuracy_score, f1_score
+
+# Task [2]: test different classification methods 
+# --------------------------------------------------------------------------
+# !! for different methods, you need to import different scikit learn libraries !!
+# the template only includes one example library 
+# search scikit-learn homepage to find out more libraries 
+# --------------------------------------------------------------------------
+
+
+# step 1. loda data and split it into training set and testing set 
+data = np.genfromtxt('crimecommunity.csv', delimiter=',')
+num_train = 500
+sample_train = data[0:num_train,0:-2]
+sample_test = data[num_train:,0:-2]
+label_train = data[0:num_train,-2]
+label_test = data[num_train:,-2]
+
+
+
+
+# -----------------------------------------------------------------------------------
+# experiment 1: Naive Bayes model 
+# -----------------------------------------------------------------------------------
+# first, construct a naive bayes model using function "GaussianNB"
+model_nb = GaussianNB()
+# then, fit the model using sample_train and label_train using function "fit"
+...
+# finally, evaluate the model on the testing sample 
+# (1) apply the model to predict labels of testing examples using function "predict"
+label_test_pred = model_nb.fit(sample_train,label_train).predict(sample_test)
+# (2) compare your prediction with true label using function "accuracy_score" 
+# the above function will return classification accuracy, and "error=1-accuracy" 
+error_nb = 1-accuracy_score(label_test,label_test_pred)
+
+print(error_nb)
+# (3) compare your prediction with true label using function "f1_score" 
+f1_nb = f1_score(label_test,label_test_pred)
+print(f1_nb)
+
+# -----------------------------------------------------------------------------------
+# experiment 2: Logistic Regression model 
+# -----------------------------------------------------------------------------------
+# construct a logistic regression model using function "LogisticRegression"
+# manually choose hyperparameter C in {0.01, 0.1, 1, 10, 100}
+# you can choose it based on either error or f1-score
+model_lr = LogisticRegression(C=0.1)
+# fit the model 
+...
+# evaluate the model 
+label_test_pred = model_lr.fit(sample_train,label_train).predict(sample_test)
+error_lr = 1-accuracy_score(label_test,label_test_pred)
+f1_lr = f1_score(label_test,label_test_pred)
+
+print(error_lr)
+print(f1_lr)
+
+# -------------------------------------------------------------------
+# let's examine prediction fairness of the logistic regression model 
+# -------------------------------------------------------------------
+# recall the first column tells you whether a community is minority or not 
+# from the following membership vector, we can know which testing examples are minority 
+groupmembership = sample_test[:,0]
+
+index_minority = np.where(groupmembership==1)[0]
+index_majority = np.where(groupmembership==0)[0]
+
+print(index_minority)
+print(index_majority)
+# within the minority communities, estimate the probability/frequency they are predicted as high risk (y_pred = 1)
+Prob_highrisk_minority = len(set(index_minority)-(set(index_minority) - set(np.where(label_test_pred==1)[0])))/len(index_minority)
+print('Prob_highrisk_minority')
+print(Prob_highrisk_minority)
+# within the majority communities, estimate the probability/frequency they are predicted as high risk (y_pred = 1)
+Prob_highrisk_majority = len(set(index_majority)-(set(index_majority) - set(np.where(label_test_pred==1)[0])))/len(index_majority)
+print('Prob_highrisk_majority')
+print(Prob_highrisk_majority)
+# estimate the ratio;, is it close to 1? 
+ratio = Prob_highrisk_majority/Prob_highrisk_minority
+print('ratio')
+print(ratio)
+
+
+# -----------------------------------------------------------------------------------
+# experiment 3: LDA model
+# -----------------------------------------------------------------------------------
+# construct a linear discriminant analysis model using function "LinearDiscriminantAnalysis"
+model_lda = LinearDiscriminantAnalysis()
+# fit the model 
+...
+# evaluate the model 
+label_test_pred = model_lda.fit(sample_train,label_train).predict(sample_test)
+error_lda = 1-accuracy_score(label_test,label_test_pred)
+f1_lda = f1_score(label_test,label_test_pred)
+print(error_lda)
+print(f1_lda)
+
+
+# -----------------------------------------------------------------------------------
+# experiment 4: SVM model
+# -----------------------------------------------------------------------------------
+# construct a support vector machine model using function "SVC"
+# use rbf kernel and use default gamma by setting gamma='auto' 
+# choose hyperparameter C in {1, 10, 100}
+model_svm = SVC(C=10,gamma='auto', kernel='rbf')
+# fit the model 
+...
+# evaluate the model 
+label_test_pred = model_svm.fit(sample_train,label_train).predict(sample_test)
+error_svm = 1-accuracy_score(label_test,label_test_pred)
+f1_svm = f1_score(label_test,label_test_pred)
+print(error_svm)
+print(f1_svm)
+
+
+# -----------------------------------------------------------------------------------
+# experiment 5: knn model
+# -----------------------------------------------------------------------------------
+# construct a k nearest neighbor model using function "KNeighborsClassifier"
+# choose hyperparameter n_neighbors in {1, 3, 5, 10, 20}
+model_knn = KNeighborsClassifier(n_neighbors=10)
+# fit the model 
+...
+# evaluate the model 
+label_test_pred = model_knn.fit(sample_train,label_train).predict(sample_test)
+error_knn = 1-accuracy_score(label_test,label_test_pred)
+f1_knn = f1_score(label_test,label_test_pred)
+print(error_knn)
+print(f1_knn)
+
+
+# -----------------------------------------------------------------------------------
+# experiment 6: neural network model
+# -----------------------------------------------------------------------------------
+# construct a neural network model using function "DecisionTreeClassifier"
+# fix hyperparameter "alpha = 1e-2" 
+# choose hyperparameter hidden_layer_sizes in {(2,2), (4,2), (4,4), (10,10)}
+# for each network structure, try to run the network multiple times and see if you get the same result 
+model_nn = MLPClassifier( alpha = 1e-2, hidden_layer_sizes=(10,10) )
+# fit the model 
+...
+# evaluate the model 
+label_test_pred = model_nn.fit(sample_train,label_train).predict(sample_test)
+error_nn = 1-accuracy_score(label_test,label_test_pred)
+f1_nn = f1_score(label_test,label_test_pred)
+print(error_nn)
+print(f1_nn)
+
+
+# -----------------------------------------------------------------------------------
+# experiment 7: decision tree model
+# -----------------------------------------------------------------------------------
+# construct a decision tree model using function "DecisionTreeClassifier"
+# use default hyperparameters (no need to manually set anything)
+model_tree = DecisionTreeClassifier()
+# fit the model 
+...
+# evaluate the model 
+label_test_pred = model_tree.fit(sample_train,label_train).predict(sample_test)
+error_tree = 1-accuracy_score(label_test,label_test_pred)
+f1_tree = f1_score(label_test,label_test_pred)
+print(error_tree)
+print(f1_tree)
+
+
+
+# -----------------------------------------------------------------------------------
+# experiment 8: random forest model
+# -----------------------------------------------------------------------------------
+# construct a random forest model using function "RandomForestClassifier"
+# choose hyperparameter n_estimators in {1, 3, 5, 10, 20}
+model_forest = RandomForestClassifier(n_estimators=20)
+# fit the model 
+
+# evaluate the model 
+label_test_pred = model_forest.fit(sample_train,label_train).predict(sample_test)
+error_forest = 1-accuracy_score(label_test,label_test_pred)
+f1_forest = f1_score(label_test,label_test_pred)
+print(error_forest)
+print(f1_forest)
+
+# -----------------------------------------------------------------------------------
+# experiment 9: adaboost model
+# -----------------------------------------------------------------------------------
+# construct an adaboot model using function "AdaBoostClassifier"
+# choose hyperparameter n_estimators in {1, 2, 3, 6, 9}
+model_boost = AdaBoostClassifier(n_estimators=3)
+# fit the model 
+
+# evaluate the model 
+label_test_pred = model_boost.fit(sample_train,label_train).predict(sample_test)
+error_boost = 1-accuracy_score(label_test,label_test_pred)
+f1_boost = f1_score(label_test,label_test_pred)
+print(error_boost)
+print(f1_boost)
+
+
+

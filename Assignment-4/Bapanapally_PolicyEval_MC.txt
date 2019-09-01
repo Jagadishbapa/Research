@@ -1,0 +1,66 @@
+
+# -----------------------------------------------
+# Task [1.2]: linear solver for policy evaluation 
+# -----------------------------------------------
+
+import numpy as np
+# here i only import functions that are necessary to this task 
+# but feel free to import other functions to speed up implementation 
+from functions import TrueTransProb, Reward, Action,OptimalPolicy, StateCodeBook
+
+# Let's setup the environment first 
+reward = Reward() 
+TransProb = TrueTransProb() 
+# Note the above are unknown to the agent 
+
+# we will evaluate the optimal policy
+policy = OptimalPolicy()
+
+
+# now, implement a Monte Carlo method to estimate utilities of non-terminal states 
+# you may use "action" to simulate a sequence of states 
+# and remember to stop search when the agent reaches a terminal state 
+# ...
+# ...
+
+def rewardcal(i,j):
+    if(i==2 and j==3):
+        return 1
+    if(i==1  and j==3):
+        return -1
+    rew = reward[i,j]
+    i1,j1=Action(i,j,policy)
+    return rew+rewardcal(i1,j1)
+
+
+
+
+
+utilitymatrix = np.zeros(11)
+print(utilitymatrix)
+utilitymatrix[6] =-1
+utilitymatrix[10] = 1
+
+
+for i  in range(3):
+    for j in range(4):
+        if (i==1 and (j!=1 and j!=3)) or (i==2 and j!=3) or (i==0):
+            avgsum=0
+            for k in range(1000):
+                rew = rewardcal(i,j)
+                avgsum=avgsum+rew
+            utilitymatrix[StateCodeBook(i,j)]=avgsum/1000
+print(utilitymatrix)
+
+
+
+
+        
+    
+    
+        
+        
+    
+    
+    
+

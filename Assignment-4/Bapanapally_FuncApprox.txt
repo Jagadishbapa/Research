@@ -1,0 +1,152 @@
+
+# -----------------------------------------------
+# Task [5]: function approximation 
+# -----------------------------------------------
+
+import numpy as np
+import sklearn
+# here i only import functions that are necessary to this task 
+# but feel free to import other functions to speed up implementation 
+from functions import TrueUtility, Reward
+from sklearn import linear_model
+from sklearn.metrics import mean_squared_error
+
+# Let's setup the environment first 
+utility = TrueUtility()
+
+# We will use a linear regression function to approximate utility function 
+
+# We observe utilities of four states (0,0), (0,3), (1,2) and (2,1)
+# we will index them as 
+# 0 for (0,0)
+# 1 for (0,3)
+# 2 for (1,2)
+# 3 for (2,1)
+# we design five features for each state (the first two are coordinates)
+number_observedstate = 4
+number_feature = 5
+
+# now we store all observations into matrix and vector 
+# We use vector Label, such that Label[a] is the utility of the a_{th} observed state
+Label = np.zeros(number_observedstate)
+# We use matrix Sample, such that Sample[a,j] is the j_{th} feature of the a_{th} observed state
+Sample = np.zeros((number_observedstate,number_feature))
+
+# distance to (2,3)
+def disttotwothree(i,j):
+    return abs(2-i)+abs(3-j)
+# distance to (1,3)
+def disttoonethree(i,j):
+    return abs(1-i)+abs(3-j)
+
+# -- now we manually input features and utilities of observed states  
+# (0,0) is the 0th observed state
+reward=Reward()
+Label[0] = utility[0,0]
+Sample[0,0] = 0 # first coordinate
+Sample[0,1] = 0 # second coordinat
+Sample[0,2] =  reward[0,0]+utility[0,0]# third feature
+Sample[0,3] =  disttotwothree(0,0) # distance to (2,3)
+Sample[0,4] =  disttoonethree(0,0) # distance to (1,3)
+
+# (0,3) is the 1st observed state
+Label[1] = utility[0,3]
+Sample[1,0] = 0
+Sample[1,1] = 3
+Sample[1,2] =  utility[0,3]
+Sample[1,2] =  reward[0,3]+utility[0,3]# third feature
+Sample[1,3] =  disttotwothree(0,3) # distance to (2,3)
+Sample[1,4] =  disttoonethree(0,3) # distance to (1,3)
+
+# (1,2) is the 2nd observed state
+Label[2] = utility[1,2]
+Sample[2,0] = 1
+Sample[2,1] = 2
+Sample[2,2] =  reward[1,2]+utility[1,2]# third feature
+Sample[2,3] =  disttotwothree(1,2) # distance to (2,3)
+Sample[2,4] =  disttoonethree(1,2) # distance to (1,3)
+
+# (2,1) is the 3rd observed state
+Label[3] = utility[2,1]
+Sample[3,0] = 2
+Sample[3,1] = 1
+Sample[3,2] =  reward[2,1]+utility[2,1]# third feature
+Sample[3,3] =  disttotwothree(2,1) # distance to (2,3)
+Sample[3,4] =  disttoonethree(2,1) # distance to (1,3)
+
+
+# -- we also need to manually input features of unobserved states (but no utilities)
+number_unobservedstate = 5
+Label_test = np.zeros(number_unobservedstate)
+Sample_test = np.zeros((number_unobservedstate,number_feature))
+
+# (0,1) is the 0th unobserved state
+Label_test[0] = utility[0,1]
+Sample_test[0,0] = 0
+Sample_test[0,1] = 1
+Sample_test[0,2] =  reward[0,1]+utility[0,1]
+Sample_test[0,3] =  disttotwothree(0,1)
+Sample_test[0,4] =  disttoonethree(0,1)
+
+# (0,2) is the 1st unobserved state
+Label_test[1] = utility[0,2]
+Sample_test[1,0] =  0
+Sample_test[1,1] =  2
+Sample_test[1,2] = reward[0,2]+utility[0,2]
+Sample_test[1,3] =  disttotwothree(0,2)
+Sample_test[1,4] =  disttoonethree(0,2)
+
+# (1,0) is the 2nd unobserved state
+Label_test[2] = utility[1,0]
+Sample_test[2,0] =  1
+Sample_test[2,1] =  0
+Sample_test[2,2] =  reward[1,0]+utility[1,0]
+Sample_test[2,3] =  disttotwothree(1,0)
+Sample_test[2,4] =  disttoonethree(1,0)
+# (2,0) is the 3rd unobserved state
+Label_test[3] = utility[2,0]
+Sample_test[2,0] =  2
+Sample_test[2,1] =  0
+Sample_test[2,2] =  reward[2,0]+utility[2,0]
+Sample_test[2,3] =  disttotwothree(2,0)
+Sample_test[2,4] =  disttoonethree(2,0)
+
+# (2,2) is the 4th unobserved state
+Label_test[4] = utility[2,2]
+Sample_test[4,0] =  2
+Sample_test[4,1] =  2
+Sample_test[4,2] =  reward[2,2]+utility[2,2]
+Sample_test[4,3] =  disttotwothree(2,2)
+Sample_test[4,4] =  disttoonethree(2,2)
+
+print(Label_test)
+# -- now, solve linear regression model based on "Sample" and "Label"
+# here we can use a machine learning package on linear regression 
+# this essentially is an optimization solver, but it facilitates 
+# make predictions and evaluating errors 
+
+# the following code is used to estimate coefficients by learst square 
+model = linear_model.LinearRegression()
+model.fit(Sample, Label)
+print(model.coef_) # print coefficients
+
+# now we can apply the model to predict utilities of other states 
+Label_predict = model.predict(Sample_test)
+print(Label_predict)
+# now, compare elements in label_test and Label_predict to get errors 
+# ...
+
+print('--errors--')
+errors = abs(Label_test-Label_predict)
+print(errors)
+print('--mean--')
+print(sum(errors)/5)
+        
+    
+    
+        
+        
+    
+    
+    
+

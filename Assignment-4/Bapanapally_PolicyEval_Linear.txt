@@ -1,0 +1,101 @@
+
+# -----------------------------------------------
+# Task [1.1]: linear solver for policy evaluation 
+# -----------------------------------------------
+
+import numpy as np
+# here i only import functions that are necessary to this task 
+# but feel free to import other functions to speed up implementation 
+from functions import TrueTransProb, Reward, StateCodeBook,OptimalPolicy
+
+# Let's setup the environment first 
+reward = Reward() # fix reward 
+TransProb = TrueTransProb() # fix true transition probability p(s'|s,a)
+
+# we will evaluate the optimal policy
+policy = OptimalPolicy()
+
+# Next, randomly initialize state utilities 
+# Assume the utilities of terminal states are known 
+utility = np.random.uniform(0,1,(3,4)) 
+utility[1,3] = -1
+utility[2,3] = 1
+
+
+
+# now, implement a linear solver to find utilities of non-terminal states 
+# ...
+# ...
+
+# --- tips ---
+# You might use an adjacent matrix AdjacentMatrix to speed up implementation 
+# AdjacentMatrix[k1,k2]=1 if states k1 and k2 are connected, and 0 otherwise 
+# We can use this matrix to identify successors of any state 
+# For easier use we will set its diagonals to zero         
+AdjacentMatrix = np.zeros((11,11))
+for j in range(4):
+    AdjacentMatrix = AdjacentMatrix + TransProb[:,:,j]
+AdjacentMatrix = (AdjacentMatrix>0)*1
+np.fill_diagonal(AdjacentMatrix,0)
+
+# To efficiently index elements in AdjacentMatrix, you might also use StateCodeBook 
+# We generally use coordinate (i,j) to index a state, but for transition probability 
+# we will use an encoded number k to index a state. The relation between (i,j) and k 
+# is specified as follows: StateCodeBook(i,j)=k. 
+
+# --- Below is an example on using StateCodeBook to get transition probability --- 
+# Suppose we want to study state (i,j) 
+(i,j) = (0,1)
+# we can get the encoded number k of (i,j) by 
+#k = StateCodeBook(i,j)
+# now we want to study the transition probabilities to its successors 
+# we can first identify successors from the adjacent matrix 
+# and the (encoded) indices of its successors in the following vector 
+#index_successor = np.where(AdjacentMatrix[k,:]==1)[0]
+# pick up an arbitrary action 
+action = 0
+# now, we can iteratively access transition probability of one successor 
+#for s in range(len(index_successor)):
+ #   prob = TransProb[k, index_successor[s], action]
+  #  print("Transition probability from state %d to state %d under action % d is %.1f" % (k, index_successor[s], action, prob) )
+
+equationmatrix = np.zeros((11,11))
+
+for i in range(3):
+    for j in range(4):
+        if (i == 1 and (j != 1 and j != 3)) or (i == 2 and j != 3) or (i == 0):
+            k = StateCodeBook(i, j)
+            index_successor = np.where(AdjacentMatrix[k, :] == 1)[0]
+            for s in range(len(index_successor)):
+                    prob = TransProb[k, index_successor[s], int(policy[i,j])]
+                    equationmatrix[k][index_successor[s]] = prob
+            equationmatrix[k][k] = -1 + TransProb[k, k, int(policy[i, j])]
+
+    
+equationmatrix[10][10]=1
+equationmatrix[6][6]=1
+
+
+print(equationmatrix)
+discount = 0.04
+equationequals = np.full(11, discount)
+equationequals [6] = -1
+equationequals [10] = 1
+print(equationequals)
+print('---- solution----')
+solutions = np.linalg.solve(equationmatrix, equationequals)
+print(solutions)
+    
+    
+
+
+
+        
+    
+    
+        
+        
+    
+    
+    
+

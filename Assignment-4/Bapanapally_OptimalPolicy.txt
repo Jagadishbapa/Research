@@ -1,0 +1,145 @@
+
+# -----------------------------------------------
+# Task [2]: identify optimal policy based on Bellman equation 
+# -----------------------------------------------
+
+import numpy as np
+# here i only import functions that are necessary to this task 
+# but feel free to import other functions to speed up implementation 
+from functions import TrueTransProb, Reward, TrueUtility, StateCodeBook
+
+
+
+
+
+# Let's setup the environment first 
+reward = Reward() 
+TransProb = TrueTransProb() 
+utility = TrueUtility() # fix true utility
+
+# Next, randomly initialize policy 
+# but remember we do not need to identify policy at terminal states 
+policy = np.random.randint(0,3,(3,4)) 
+
+# You might use the adjacent matrix AdjacentMatrix to speed up implementation 
+AdjacentMatrix = np.zeros((11,11))
+for j in range(4):        
+    AdjacentMatrix = AdjacentMatrix + TransProb[:,:,j]
+AdjacentMatrix = (AdjacentMatrix>0)*1
+np.fill_diagonal(AdjacentMatrix,0)
+
+# now, implement an algorithm to identify optimal policy based on Bellman equation 
+# ...
+# ...
+
+probmatrix = [[0,0], [0,1], [0,2], [0,3], [1,0] , [1,2], [1,3], [2,0], [2,1], [2,2], [2,3]]
+
+def Actionpolicy(i,j,policy):
+
+    if (policy[i,j]==0):
+        i_new = np.min([i + 1 ,2])
+        j_new = j
+    # case 2: actually go down
+    elif (policy[i,j]==1):
+        i_new = np.max([i - 1 ,0])
+        j_new = j
+    # case 3: actually go left
+    elif (policy[i,j]==2):
+        j_new = np.max([j - 1 ,0])
+        i_new = i
+    # case 4: actually go right
+    elif (policy[i,j]==3):
+        j_new = np.min([j + 1 ,3])
+        i_new = i
+    # make sure we do not go into rock (and if so, stay where we were)
+    if (i_new,j_new) == (1,1):
+        i_new = i
+        j_new = j
+    # now return new state
+    return i_new, j_new
+
+
+def up(i,j,k):
+    sum=0
+    actionset = set()
+    for x in range(4):
+        policy[i, j] = x
+        actionset.add(Actionpolicy(i, j, policy))
+    for y in actionset:
+        sum+=TransProb[k,StateCodeBook(y[0],y[1]),0]*utility[probmatrix[StateCodeBook(y[0],y[1])][0],probmatrix[StateCodeBook(y[0],y[1])][1]]
+    return sum
+
+def down(i,j,k):
+    sum=0
+    actionset = set()
+    for x in range(4):
+        policy[i, j] = x
+        actionset.add(Actionpolicy(i, j, policy))
+    for y in actionset:
+        sum += TransProb[k, StateCodeBook(y[0], y[1]), 1] * utility[
+            probmatrix[StateCodeBook(y[0], y[1])][0], probmatrix[StateCodeBook(y[0], y[1])][1]]
+    return sum
+
+def left(i,j,k):
+    sum=0
+    actionset = set()
+    for x in range(4):
+        policy[i, j] = x
+        actionset.add(Actionpolicy(i, j, policy))
+    for y in actionset:
+        sum += TransProb[k, StateCodeBook(y[0], y[1]), 2] * utility[
+            probmatrix[StateCodeBook(y[0], y[1])][0], probmatrix[StateCodeBook(y[0], y[1])][1]]
+    return sum
+
+def right(i,j,k):
+    sum=0
+    actionset = set()
+    for x in range(4):
+        policy[i, j] = x
+        actionset.add(Actionpolicy(i, j, policy))
+    for y in actionset:
+        sum += TransProb[k, StateCodeBook(y[0], y[1]), 3] * utility[
+            probmatrix[StateCodeBook(y[0], y[1])][0], probmatrix[StateCodeBook(y[0], y[1])][1]]
+    return sum
+
+utilitymatrix = np.zeros(11)
+utilitymatrix[6] = -1
+utilitymatrix[10] = 1
+
+
+
+for i in range(3):
+    for j in range(4):
+        if (i == 1 and (j != 1 and j != 3)) or (i == 2 and j != 3) or (i == 0):
+            upval = up(i,j, StateCodeBook(i,j))
+            downval = down(i,j, StateCodeBook(i,j))
+            rightval = right(i,j, StateCodeBook(i,j))
+            leftval = left(i,j, StateCodeBook(i,j))
+            maxval = max(upval,rightval,downval,leftval)
+            utilitymatrix[StateCodeBook(i,j)] = reward[i,j] + (0.8 * maxval)
+            if maxval == upval:
+                policy[i,j] = 0
+            if maxval == downval:
+                policy[i,j] = 1
+            if maxval == rightval:
+                policy[i,j] = 3
+            if maxval == leftval:
+                policy[i,j] = 2
+
+
+
+print(utilitymatrix)
+print(policy)
+    
+
+
+
+        
+    
+    
+        
+        
+    
+    
+    
+

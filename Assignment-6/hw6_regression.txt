@@ -1,0 +1,99 @@
+import numpy as np
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
+from sklearn.linear_model import Ridge
+from sklearn.linear_model import RidgeCV
+from sklearn import linear_model
+from sklearn.kernel_ridge import KernelRidge
+# Task [1]: test different regresssion methods  
+# --------------------------------------------------------------------------
+# !! for different methods, you need to import different scikit learn libraries !!
+# the template only includes one example library 
+# search scikit-learn homepage to find out more libraries 
+# --------------------------------------------------------------------------
+
+# step 1. loda data and split it into training set and testing set 
+data = np.genfromtxt('crimecommunity.csv', delimiter=',')
+num_train = 500
+sample_train = data[0:num_train,0:-2]
+sample_test = data[num_train:,0:-2]
+label_train = data[0:num_train,-1]
+label_test = data[num_train:,-1]
+
+
+# -----------------------------------------------------------------------------------
+# experiment 1: linear regression model + least square learner (default)
+# -----------------------------------------------------------------------------------
+# first, construct a linear regression model using function "LinearRegression"
+model_linear = LinearRegression()
+# then, fit the model using sample_train and label_train using function "fit"
+model_linear = model_linear.fit(sample_train,label_train)
+# finally, evaluate the model on the testing sample 
+# (1) apply the model to predict labels of testing examples using function "predict"
+label_test_pred = model_linear.predict(sample_test)
+# (2) compare your prediction with true label using function "mean_squared_error" 
+mse_linear = mean_squared_error(label_test, label_test_pred)
+
+print(mse_linear)
+
+# -----------------------------------------------------------------------------------
+# experiment 2: linear regression model + ridge learner
+# -----------------------------------------------------------------------------------
+# first, construct a linear regression model + ridge learner using function "Ridge"
+# manually choose hyperparameter alpha in {0.1, 1, 10, 100}
+model_ridge = Ridge(alpha=10)
+
+model_ridge=model_ridge.fit(sample_train,label_train)
+# fit the model 
+
+# evaluate the model 
+label_test_pred = model_ridge.predict(sample_test)
+mse_ridge = mean_squared_error(label_test, label_test_pred)
+print(mse_ridge)
+
+
+# ----------------------------------------------------------------------------------------------
+# experiment 3: same as experiment 2, but use cross-validation to select optimal hyperparameter
+# ----------------------------------------------------------------------------------------------
+# this time, use cross validation to choose an optimal hyperparameter alpha from {0.1, 1, 10, 100} 
+# the embedded cross-validation function for ridge regressor is "RidgeCV" 
+model_ridge_cv = RidgeCV(alphas=[0.1, 1, 10, 100])
+# fit the model 
+model_ridge_cv=model_ridge_cv.fit(sample_train,label_train)
+# evaluate the model 
+label_test_pred = model_ridge_cv.predict(sample_test)
+mse_ridge_cv = mean_squared_error(label_test, label_test_pred)
+print(mse_ridge_cv)
+
+# -----------------------------------------------------------------------------------
+# experiment 4: linear regression model + lasso learner
+# -----------------------------------------------------------------------------------
+# first, construct a linear regression model + lasso learner using function "Lasso"
+# manually choose hyperparameter alpha in {1e-4, 1e-3, 1e-2, 1e-1}
+model_lasso = linear_model.Lasso(alpha=1e-3)
+# fit the model 
+...
+# evaluate the model 
+label_test_pred = model_lasso.fit(sample_train,label_train).predict(sample_test)
+mse_lasso = mean_squared_error(label_test, label_test_pred)
+print(mse_lasso)
+print(model_lasso.coef_)
+# print the regression coefficients using the following function, observe many are zeros 
+# print(model_lasso.coef_)
+ 
+
+# -----------------------------------------------------------------------------------
+# experiment 5: kernel regression model + least square (default)
+# -----------------------------------------------------------------------------------
+# first, construct a kernel regression model using function "KernelRidge"
+# use rbf kernel, by setting kernel = "rbf" 
+# manually choose hyperparameter alpha in {1e1, 1e0, 1e-1, 1e-2, 1e-3, 1e-4}
+model_kernel = KernelRidge(alpha=1e-1, kernel='rbf')
+# fit the model 
+...
+# evaluate the model 
+label_test_pred = model_kernel.fit(sample_train,label_train).predict(sample_test)
+mse_kernel = mean_squared_error(label_test, label_test_pred)
+print(mse_kernel)
+
+
